@@ -82,3 +82,29 @@
     - name: Display kubectl version
       ansible.builtin.debug:
         msg: "kubectl successfully installed: {{ kubectl_version_check.stdout }}"
+
+    - name: Download Helm tarball
+      ansible.builtin.get_url:
+        url: "https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz"
+        dest: /tmp/helm.tar.gz
+        mode: '0644'
+
+    - name: Extract Helm binary
+      ansible.builtin.unarchive:
+        src: /tmp/helm.tar.gz
+        dest: /tmp
+        remote_src: yes
+
+    - name: Move Helm to /usr/local/bin
+      ansible.builtin.command:
+        cmd: mv /tmp/linux-amd64/helm /usr/local/bin/helm
+        creates: /usr/local/bin/helm
+
+    - name: Verify Helm installation
+      ansible.builtin.command: helm version
+      register: helm_version_check
+      changed_when: false
+    
+    - name: Display Helm version
+      ansible.builtin.debug:
+        msg: "Helm successfully installed: {{ helm_version_check.stdout }}"
