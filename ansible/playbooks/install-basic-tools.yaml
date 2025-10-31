@@ -57,3 +57,28 @@
     - name: Display Kind version
       ansible.builtin.debug:
         msg: "Kind successfully installed: {{ kind_version_check.stdout }}"
+
+    - name: Get latest stable kubectl version
+      ansible.builtin.shell: "curl -L -s https://dl.k8s.io/release/stable.txt"
+      register: kubectl_version
+      changed_when: false
+
+    - name: Download kubectl binary
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/{{ kubectl_version.stdout }}/bin/linux/amd64/kubectl"
+        dest: /tmp/kubectl
+        mode: '0755'
+
+    - name: Move kubectl binary to /usr/local/bin
+      ansible.builtin.command:
+        cmd: mv /tmp/kubectl /usr/local/bin/kubectl
+        creates: /usr/local/bin/kubectl
+    
+    - name: Verify kubectl installation
+      ansible.builtin.command: kubectl version --client
+      register: kubectl_version_check
+      changed_when: false
+    
+    - name: Display kubectl version
+      ansible.builtin.debug:
+        msg: "kubectl successfully installed: {{ kubectl_version_check.stdout }}"
