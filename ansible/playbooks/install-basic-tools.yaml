@@ -37,3 +37,23 @@
     - name: Display Docker version
       ansible.builtin.debug:
         msg: "Docker successfully installed: {{ docker_version.stdout }}"
+
+    - name: Download Kind binary
+      ansible.builtin.get_url:
+        url: "https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64"
+        dest: /tmp/kind
+        mode: '0755'
+
+    - name: Move Kind binary to /usr/local/bin
+      ansible.builtin.command:
+        cmd: mv /tmp/kind /usr/local/bin/kind
+        creates: /usr/local/bin/kind
+
+    - name: Verify Kind installation
+      ansible.builtin.command: kind version
+      register: kind_version_check
+      changed_when: false
+    
+    - name: Display Kind version
+      ansible.builtin.debug:
+        msg: "Kind successfully installed: {{ kind_version_check.stdout }}"
