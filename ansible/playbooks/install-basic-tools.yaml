@@ -1,0 +1,39 @@
+---
+- name: Install and configure Docker on Fedora 42
+  hosts: all
+  become: yes
+  become_user: root
+  remote_user: igarcia  # Use the igarcia user
+
+  tasks:
+    - name: Ensure dnf plugins are installed
+      ansible.builtin.package:
+        name: dnf-plugins-core
+        state: present
+
+    - name: Install Docker packages
+      ansible.builtin.package:
+        name:
+          - docker
+        state: present
+
+    - name: Enable and start Docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add igarcia to docker group
+      ansible.builtin.user:
+        name: igarcia
+        groups: docker
+        append: yes
+
+    - name: Verify Docker installation
+      ansible.builtin.command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Display Docker version
+      ansible.builtin.debug:
+        msg: "Docker successfully installed: {{ docker_version.stdout }}"
